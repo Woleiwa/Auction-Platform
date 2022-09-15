@@ -1,0 +1,2 @@
+E:\code\Auction_Platform\Auction_Platform\Debug\Auction_Platform.exe
+E:\code\Auction_Platform\Auction_Platform\Debug\Auction_Platform.pdb

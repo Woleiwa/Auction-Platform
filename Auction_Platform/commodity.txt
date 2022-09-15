@@ -1,0 +1,2 @@
+M00001,NjuPhoto,12.000000,1.000000,2022-09-15 20:36:05,U00006,OnSale,Taken_last_summer,with_frame
+M00002,Calculus,13.000000,2.000000,2022-09-15 20:36:42,U00006,OnSale,90%new,without_handwriting

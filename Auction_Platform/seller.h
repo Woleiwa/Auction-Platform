@@ -13,15 +13,17 @@ public:
 
 	~Seller();
 
-	void sellar_operate();
+	void operate();
 
 	void add_commodity();
 
-	void check_my_commodity();
+	void check_commodity();
 
-	void check_my_order();
+	void check_order();
 
-	void exit();
+	void change_commo_information();
+
+	void off_shelf();
 };
 
 #endif

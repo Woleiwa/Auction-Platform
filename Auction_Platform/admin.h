@@ -1,7 +1,4 @@
 #pragma once
-
-
-
 #ifndef _ADMIN_
 #define _ADMIN_
 class Admin
@@ -19,6 +16,14 @@ public:
 	void check_commodity();
 
 	void check_order();
+
+	void off_shelf();
+
+	void freeze_user();
+
+	void thaw_user();
+
+	void get_information();
 
 	void check_mail();
 };

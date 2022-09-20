@@ -1,2 +1,3 @@
-﻿  seller.cpp
+﻿  commodity.cpp
+E:\code\Auction_Platform\Auction_Platform\commodity.cpp(292): warning C4715: “Commodity_list::find_one_commodity”: 不是所有的控件路径都返回值
   Auction_Platform.vcxproj -> E:\code\Auction_Platform\Auction_Platform\Debug\Auction_Platform.exe

@@ -1,4 +1,5 @@
 #include "commodity.h"
+#include "order.h"
 
 Commodity_list::Commodity_list()
 {
@@ -184,6 +185,34 @@ void Commodity_list::Add_commodity(commodity_inform& info)
 	Write_to_txt();
 }
 
+commodity_list* Commodity_list::consumer_check(char id[20])
+{
+	commodity_list* head = this->head;
+	commodity_list* reshead = NULL;
+	commodity_list* restail = NULL;
+	string uid = id;
+	while (head)
+	{
+		if (head->data.st == OnSale && head->data.user_id != uid)
+		{
+			if (reshead == NULL)
+			{
+				reshead = new commodity_list;
+				restail = reshead;
+			}
+			else
+			{
+				restail->next = new commodity_list;
+				restail = restail->next;
+			}
+			restail->data = head->data;
+			restail->next = NULL;
+		}
+		head = head->next;
+	}
+	return reshead;
+}
+
 commodity_list* Commodity_list::seller_check(char id[20])
 {
 	commodity_list* head = this->head;
@@ -217,6 +246,64 @@ commodity_list* Commodity_list::admin_check()
 	return this->head;
 }
 
+commodity_inform Commodity_list::admin_search_by_id(string id)
+{
+	commodity_list* head = this->head;
+	commodity_inform res;
+	while (head)
+	{
+		if (head->data.id == id)
+		{
+			res = head->data;
+			break;
+		}
+		head = head->next;
+	}
+	return res;
+}
+
+commodity_inform Commodity_list::consumer_search_by_id(string id)
+{
+	commodity_list* head = this->head;
+	commodity_inform res;
+	while (head)
+	{
+		if (head->data.id == id && head->data.st == OnSale)
+		{
+			res = head->data;
+			break;
+		}
+		head = head->next;
+	}
+	return res;
+}
+
+commodity_list* Commodity_list::find_one_commodity(string cid)
+{
+	commodity_list* head = this->head;
+	while (head)
+	{
+		if (head->data.id == cid)
+		{
+			return head;
+		}
+		head = head->next;
+	}
+}
+
+void Commodity_list::freeze_user(string uid)
+{
+	commodity_list* head = this->head;
+	while (head)
+	{
+		if (head->data.user_id == uid && head->data.st == OnSale)
+		{
+			head->data.st = OffShelf;
+		}
+		head = head->next;
+	}
+}
+
 Commodity::Commodity(string name, double price, double add_pirce, string description, string uid)
 {
 	strcpy(this->info.name, name.c_str());
@@ -224,6 +311,19 @@ Commodity::Commodity(string name, double price, double add_pirce, string descrip
 	strcpy(this->info.user_id, uid.c_str());
 	this->info.price = price;
 	this->info.add_price = add_pirce;
+}
+
+Commodity::Commodity(string id)
+{
+	Commodity_list c_list;
+	c_list.Read_from_txt();
+	commodity_inform info = c_list.admin_search_by_id(id);
+	this->info = info;
+}
+
+commodity_inform Commodity::my_info()
+{
+	return this->info;
 }
 
 void Commodity::Create_commodity()
@@ -234,4 +334,19 @@ void Commodity::Create_commodity()
 	Commodity_list clist;
 	clist.Read_from_txt();
 	clist.Add_commodity(this->info);
+}
+
+void Commodity::offshelf()
+{
+	this->info.st = OffShelf;
+	Commodity_list clist;
+	clist.Read_from_txt();
+	string cid = this->info.id;
+	commodity_list* pointer = clist.find_one_commodity(cid);
+	pointer->data.st = OffShelf;
+	clist.Write_to_txt();
+	Order_List olist;
+	olist.Read_from_txt();
+	olist.OffShelf(cid);
+	olist.Write_to_txt();
 }

@@ -2,12 +2,6 @@
 #ifndef _USER_
 #define _USER_
 #include<cstring>
-#include<iomanip>
-#include<iostream>
-#include<fstream>
-#include<string>
-#include<cstdlib>
-#include<conio.h>
 #include"mytime.h"
 using namespace std;
 
@@ -25,36 +19,12 @@ struct inform//用户信息
 	User_con con;
 };
 
-struct inform_list
+struct inform_list//信息链表
 {
 	inform data;
 	inform_list* next;
 };
 
-class User_list
-{
-public:
-	User_list();
-
-	~User_list();
-
-	bool Read_from_txt();//读取信息
-
-	void Write_to_txt();//写入信息
-
-	void Sign_in();//登录
-
-	void Regist();
-
-	inform_list* get_information();
-
-	inform_list* find_one_user(string uid);
-
-	void Forget_Password();
-private:
-	inform_list* user_head = NULL, * user_tail = NULL;
-
-};
 
 class User
 {

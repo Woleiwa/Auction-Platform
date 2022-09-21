@@ -141,25 +141,31 @@
   <ItemGroup>
     <ClCompile Include="admin.cpp" />
     <ClCompile Include="commodity.cpp" />
+    <ClCompile Include="Commodity_List.cpp" />
     <ClCompile Include="consumer.cpp" />
     <ClCompile Include="mail.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="order.cpp" />
+    <ClCompile Include="Order_List.cpp" />
     <ClCompile Include="seller.cpp" />
     <ClCompile Include="mytime.cpp" />
     <ClCompile Include="user.cpp" />
+    <ClCompile Include="User_List.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h" />
     <ClInclude Include="commodity.h" />
+    <ClInclude Include="Commodity_List.h" />
     <ClInclude Include="consumer.h" />
     <ClInclude Include="mail.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="order.h" />
+    <ClInclude Include="Order_List.h" />
     <ClInclude Include="seller.h" />
     <ClInclude Include="mytime.h" />
     <ClInclude Include="user.h" />
+    <ClInclude Include="User_List.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

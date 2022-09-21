@@ -1,6 +1,13 @@
 #include"admin.h"
 #include"user.h"
+#include"commodity.h"
+#include"order.h"
+#include"User_List.h"
 #include<windows.h>
+#include<mutex>
+#include<thread>
+#include"Order_List.h"
+#include"Commodity_List.h"
 //#define _TIMETEST_
 //#define _USERTEST_
 //#define _ADMINTEST_
@@ -20,7 +27,7 @@ int main()
 #ifdef _USERTEST_
 int main()
 {
-	User_list ulist;
+	User_List ulist;
 	ulist.Read_from_txt();
 	//ulist.Regist();
 	ulist.Sign_in();
@@ -37,11 +44,21 @@ int main()
 
 #ifdef _MAIN_
 void Start();
+void Update();
+mutex o_mtx;
+mutex c_mtx;
+mutex u_mtx;
+bool update = true;
+User_List ulist;
+Order_List olist;
+Commodity_List clist;
 
 int main()
 {
-	Start();
-	return 0;
+	thread t1(Start);
+	thread t2(Update);
+	t1.join();
+	t2.join();
 }
 
 void Start()
@@ -61,7 +78,10 @@ void Start()
 			cin.clear();
 			cin.ignore();
 		}
-		cout << endl << "******Error input******" << endl;
+		system("cls");
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
+		cout << "******Error input******" << endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		cout << "==============================================================================================================" << endl;
 		cout << "instruction£º1.user_login 2.user_regist 3.admin_login 4.forget_password 5.exit" << endl;
 		cout << "==============================================================================================================" << endl;
@@ -70,14 +90,13 @@ void Start()
 	}
 	if (judge == 1)
 	{
-		User_list ulist;
+		
 		ulist.Read_from_txt();
 		ulist.Sign_in();
 		Start();
 	}
 	else if (judge == 2)
 	{
-		User_list ulist;
 		ulist.Read_from_txt();
 		ulist.Regist();
 		Start();
@@ -90,7 +109,6 @@ void Start()
 	}
 	else if (judge == 4)
 	{
-		User_list ulist;
 		ulist.Read_from_txt();
 		ulist.Forget_Password();
 		ulist.Write_to_txt();
@@ -98,10 +116,26 @@ void Start()
 	}
 	else
 	{
+		update = false;
 		cout << "******See you!******" << endl;
 		Sleep(1500);
 		return;
 	}
 }
 
+void Update()
+{
+	Commodity_List upclist;
+	while (update)
+	{	
+		upclist.Read_from_txt();
+		if (upclist.update())
+		{
+			upclist.Write_to_txt();
+			cout << endl<<"Information updated!" << endl;
+		}
+		Sleep(128);
+	}
+	
+}
 #endif // _MAIN_

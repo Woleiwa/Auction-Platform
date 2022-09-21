@@ -15,9 +15,9 @@ public:
 
 	void Auction();
 
-	void search_commodity();
-
 	void get_information();
+
+	void search();
 
 	void Auction(string id);
 };

@@ -5,6 +5,11 @@
 #include<conio.h>
 #include<iomanip>
 #include<windows.h>
+#include"order.h"
+#include"Commodity_List.h"
+#include"Order_List.h"
+extern Order_List olist;
+extern Commodity_List clist;
 
 Seller:: ~Seller()
 {
@@ -28,7 +33,10 @@ void Seller::operate()
 			cin.clear();
 			cin.ignore();
 		}
-		cout << endl << "******Error Input******" << endl;
+		system("cls");
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
+		cout << "******Error input******" << endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		cout << "==================================================================================================================" << endl;
 		cout << "Instruction£º1.Release 2.Check My Commodity 3.Modify information 4.Off_shelf 5.Check Order 6.Return" << endl;
 		cout << "==================================================================================================================" << endl;
@@ -122,7 +130,6 @@ void Seller::add_commodity()
 
 void Seller::check_commodity()
 {
-	Commodity_list clist;
 	clist.Read_from_txt();
 	commodity_list* head = clist.seller_check(this->get_inform().id);
 	if (head == NULL)
@@ -155,7 +162,6 @@ void Seller::check_commodity()
 
 void Seller::check_order()
 {
-	Order_List olist;
 	olist.Read_from_txt();
 	string uid = this->get_inform().id;
 	order_list* head = olist.seller_check(uid);
@@ -188,19 +194,21 @@ void Seller::check_order()
 
 void Seller::change_commo_information()
 {
-	Commodity_list clist;
 	clist.Read_from_txt();
 	commodity_list* head = clist.seller_check(this->get_inform().id);
 	commodity_list* list = head;
 	while (head)
 	{
-		
+		if (head->data.st == OnSale)
+		{
+			cout << head->data.id << endl;
+		}
+		head = head->next;
 	}
 }
 
 void Seller::off_shelf()
 {
-	Commodity_list clist;
 	clist.Read_from_txt();
 	commodity_list* head = clist.seller_check(this->get_inform().id);
 	if (head == NULL)

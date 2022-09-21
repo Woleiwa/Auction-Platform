@@ -1,3 +1,12 @@
-﻿  commodity.cpp
-E:\code\Auction_Platform\Auction_Platform\commodity.cpp(292): warning C4715: “Commodity_list::find_one_commodity”: 不是所有的控件路径都返回值
+﻿  admin.cpp
+  commodity.cpp
+  Commodity_List.cpp
+  consumer.cpp
+  main.cpp
+  order.cpp
+  Order_List.cpp
+  seller.cpp
+  user.cpp
+  User_List.cpp
+  正在生成代码...
   Auction_Platform.vcxproj -> E:\code\Auction_Platform\Auction_Platform\Debug\Auction_Platform.exe

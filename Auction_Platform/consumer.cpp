@@ -1,5 +1,11 @@
 #include"consumer.h"
 #include"commodity.h"
+#include<windows.h>
+#include"Commodity_List.h"
+#include"Order_List.h"
+
+extern Order_List olist;
+extern Commodity_List clist;
 
 void Consumer::operate()
 {
@@ -18,7 +24,10 @@ void Consumer::operate()
 			cin.clear();
 			cin.ignore();
 		}
-		cout << endl << "******Error Input******" << endl;
+		system("cls");
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
+		cout << "******Error input******" << endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		cout << "==================================================================================================================" << endl;
 		cout << "Instruction£º1.Auction 2.Check All Commodity 3.Search 4.Check Order 5.Get information 6.Return" << endl;
 		cout << "==================================================================================================================" << endl;
@@ -36,7 +45,8 @@ void Consumer::operate()
 		operate();
 		break;
 	case 3:
-
+		search();
+		operate();
 		break;
 	case 4:
 		check_order();
@@ -56,7 +66,6 @@ void Consumer::operate()
 
 void Consumer::check_commodity()
 {
-	Commodity_list clist;
 	clist.Read_from_txt();
 	commodity_list* head = clist.consumer_check(this->get_inform().id);
 	if (head == NULL)
@@ -103,7 +112,6 @@ void Consumer::check_commodity()
 
 void Consumer::check_order()
 {
-	Order_List olist;
 	olist.Read_from_txt();
 	string uid = this->get_inform().id;
 	order_list* head = olist.consumer_check(uid);
@@ -152,7 +160,6 @@ void Consumer::Auction(string id)
 	}
 	else
 	{
-		Order_List olist;
 		olist.Read_from_txt();
 		double mininum_price = 0;
 		mininum_price = olist.max_price(id);
@@ -188,17 +195,11 @@ void Consumer::Auction(string id)
 	return;
 }
 
-void Consumer::search_commodity()
-{
-
-}
-
 void Consumer::get_information()
 {
 	cout << "Please input the commodity id you want to check:" << endl;
 	string cid;
 	cin >> cid;
-	Commodity_list clist;
 	clist.Read_from_txt();
 	commodity_inform info = clist.consumer_search_by_id(cid);
 	if (strlen(info.id) == 0)
@@ -223,6 +224,59 @@ void Consumer::get_information()
 		if (judge == "yes")
 		{
 			this->Auction(cid);
+		}
+	}
+}
+
+void Consumer::search()
+{
+	cout << "Please input your key words:" << endl;
+	string key_words;
+	while (key_words.length() == 0)
+	{
+		getline(cin, key_words);
+	}
+	commodity_list* head = NULL;
+	clist.Read_from_txt();
+	head = clist.consumer_search_by_key_word(key_words);
+	if (head == NULL)
+	{
+		cout << "There were no relevant commodities." << endl;
+	}
+	else
+	{
+		cout << left << setw(12) << "Id" << setw(20) << "Name" << setw(12) << "price" << setw(12) << "markup" << setw(12) << "seller_id" << setw(24) << "releasing time" << setw(12) << "state";
+		while (head)
+		{
+			Time time(head->data.auction_time);
+			string str_time = time.time_to_string();
+			string state = "OnSale";
+			if (head->data.st == Sold)
+			{
+				state = "Sold";
+			}
+			else if (head->data.st == OffShelf)
+			{
+				state = "OffShelf";
+			}
+			cout << endl << left << setw(12) << head->data.id << setw(20) << head->data.name << setw(12) << head->data.price << setw(12) << head->data.add_price
+				<< setw(12) << head->data.user_id << setw(24) << str_time << setw(12) << state;
+			head = head->next;
+		}
+		string judge;
+		cout << endl << "Do you want to auction? Input 'yes' to auction." << endl;
+		cin >> judge;
+		if (judge != "yes")
+		{
+			system("pause");
+			return;
+		}
+		else
+		{
+			cout << endl << "Please input the commodity id you want to auction." << endl;
+			string c_id;
+			cin >> c_id;
+			Auction(c_id);
 		}
 	}
 }

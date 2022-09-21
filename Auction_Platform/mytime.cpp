@@ -28,8 +28,43 @@ my_time Time::current_time()
 	return this->data;
 }
 
-bool Time::reach_time_gap(Time date)
+bool Time::reach_time_gap()
 {
+	Time time;
+	my_time cur = time.current_time();
+	if (cur.year > this->data.year)
+	{
+		return true;
+	}
+	else if (cur.month > this->data.month)
+	{
+		return true;
+	}
+	else if (cur.day > this->data.day + 1)
+	{
+		return true;
+	}
+	else if (cur.day == this->data.day + 1)
+	{
+		if (cur.hour > this->data.hour)
+		{
+			return true;
+		}
+		else if (cur.hour == this->data.hour)
+		{
+			if (cur.minute > this->data.minute)
+			{
+				return true;
+			}
+			else if (cur.minute == this->data.minute)
+			{
+				if (cur.second > this->data.second)
+				{
+					return true;
+				}
+			}
+		}
+	}
 	return false;
 }
 

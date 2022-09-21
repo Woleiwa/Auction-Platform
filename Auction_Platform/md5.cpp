@@ -125,7 +125,6 @@ unsigned int* MD5(const char* mStr)
     return lGroup;
 }
 
-
 void AccLoop_2(unsigned short label, unsigned int* lGroup, void* M)
 {
     unsigned int* i1, * i2, * i3, * i4, TAcc, tmpi = 0; 

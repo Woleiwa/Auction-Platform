@@ -1,13 +1,8 @@
 #pragma once
 #ifndef _COMMODITY_
 #define _COMMODITY_
-#include<cstring>
-#include<iomanip>
-#include<iostream>
-#include<fstream>
+
 #include<string>
-#include<cstdlib>
-#include"order.h"
 using namespace std;
 #include"mytime.h"
 enum State { OnSale, Sold, OffShelf };
@@ -30,34 +25,10 @@ struct commodity_list
 	commodity_list* next;
 };
 
-class Commodity_list
+struct commodity_relevant
 {
-public:
-	Commodity_list();
-
-	~Commodity_list();
-
-	bool Read_from_txt();
-
-	void Write_to_txt();
-
-	void Add_commodity(commodity_inform& info);
-
-	commodity_inform admin_search_by_id(string id);
-
-	commodity_inform consumer_search_by_id(string id);
-
-	commodity_list* seller_check(char id[20]);
-
-	commodity_list* admin_check();
-
-	commodity_list* consumer_check(char id[20]);
-
-	commodity_list* find_one_commodity(string cid);
-
-	void freeze_user(string uid);
-private:
-	commodity_list* head = NULL, * tail = NULL;
+	commodity_inform data;
+	double relevance = 0;
 };
 
 class Commodity

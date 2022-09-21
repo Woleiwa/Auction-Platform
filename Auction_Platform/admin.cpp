@@ -4,7 +4,13 @@
 #include"mail.h"
 #include"mytime.h"
 #include"order.h"
-
+#include<windows.h>
+#include"User_List.h"
+#include"Order_List.h"
+#include"Commodity_List.h"
+extern User_List ulist;
+extern Order_List olist;
+extern Commodity_List clist;
 static void confidential_input(char password[])
 {
 	char ch;
@@ -32,16 +38,16 @@ Admin::Admin()
 	cin >> id;
 	while (id != this->user_id)
 	{
-		cout << endl<<"Please input the right Admin_id:";
+		cout << endl<<"Please input the right Admin_id:" <<endl;
 		cin >> id;
 	}
 	char password[20];
-	cout << "Please input your password:";
+	cout << "Please input your password:" << endl;
 	confidential_input(password);
 	string pass = password;
 	while (pass != this->password)
 	{
-		cout << "Please input the right password:";
+		cout << "Please input the right password:" << endl;
 		confidential_input(password);
 		pass = password;
 	}
@@ -67,7 +73,9 @@ void Admin::admin_operate()
 			cin.ignore();
 		}
 		system("cls");
-		cout << endl << "******Incorrect Input******" << endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
+		cout << "******Error input******" << endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		cout << "==============================================================================================================" << endl;
 		cout << "instruction£º1.check commodities 2.search commodities 3.check orders 4.check users 5.freeze users" << endl
 			 << "6.thaw users 7.offshelf commodities 8.commodity information 9.massages 10.log out" << endl;
@@ -82,7 +90,7 @@ void Admin::admin_operate()
 		admin_operate();
 		break;
 	case 2:
-	
+		search();
 		admin_operate();
 		break;
 	case 3:
@@ -122,7 +130,6 @@ void Admin::admin_operate()
 
 void Admin::check_user()
 {
-	User_list ulist;
 	ulist.Read_from_txt();
 	inform_list* head = ulist.get_information();
 	cout << left << setw(12) << "User_id" << setw(12) << "Name" << setw(12) << "Address" 
@@ -147,7 +154,6 @@ void Admin::check_user()
 
 void Admin::check_commodity()
 {
-	Commodity_list clist;
 	clist.Read_from_txt();
 	commodity_list* head = clist.admin_check();
 	if (head == NULL)
@@ -180,7 +186,6 @@ void Admin::check_commodity()
 
 void Admin::check_order()
 {
-	Order_List olist;
 	olist.Read_from_txt();
 	order_list* head = olist.admin_check();
 	if (head == NULL)
@@ -212,7 +217,6 @@ void Admin::check_order()
 
 void Admin::off_shelf()
 {
-	Commodity_list clist;
 	clist.Read_from_txt();
 	commodity_list* head = clist.admin_check();
 	if (head == NULL)
@@ -272,7 +276,6 @@ void Admin::off_shelf()
 
 void Admin::freeze_user()
 {
-	User_list ulist;
 	ulist.Read_from_txt();
 	inform_list* head = ulist.get_information();
 	inform_list* list = head;
@@ -331,7 +334,6 @@ void Admin::freeze_user()
 
 void Admin::thaw_user()
 {
-	User_list ulist;
 	ulist.Read_from_txt();
 	inform_list* head = ulist.get_information();
 	inform_list* list = head;
@@ -393,7 +395,6 @@ void Admin::get_information()
 	cout << "Please input the commodity id you want to check:" << endl;
 	string cid;
 	cin >> cid;
-	Commodity_list clist;
 	clist.Read_from_txt();
 	commodity_inform info = clist.admin_search_by_id(cid);
 	if (strlen(info.id) == 0)
@@ -424,4 +425,43 @@ void Admin::get_information()
 		cout << "State:" << state << endl;
 		system("pause");
 	}
+}
+
+void Admin::search()
+{
+	cout << "Please input your key words:" << endl;
+	string key_words;
+	while (key_words.length() == 0)
+	{
+		getline(cin, key_words);
+	}
+	commodity_list* head = NULL;
+	clist.Read_from_txt();
+	head = clist.admin_search_by_key_word(key_words);
+	if (head == NULL)
+	{
+		cout << "Users haven't released any relevant commodity." << endl;
+	}
+	else
+	{
+		cout << left << setw(12) << "Id" << setw(20) << "Name" << setw(12) << "price" << setw(12) << "markup" << setw(12) << "seller_id" << setw(24) << "releasing time" << setw(12) << "state";
+		while (head)
+		{
+			Time time(head->data.auction_time);
+			string str_time = time.time_to_string();
+			string state = "OnSale";
+			if (head->data.st == Sold)
+			{
+				state = "Sold";
+			}
+			else if (head->data.st == OffShelf)
+			{
+				state = "OffShelf";
+			}
+			cout << endl << left << setw(12) << head->data.id << setw(20) << head->data.name << setw(12) << head->data.price << setw(12) << head->data.add_price
+				<< setw(12) << head->data.user_id << setw(24) << str_time << setw(12) << state;
+			head = head->next;
+		}
+	}
+	system("pause");
 }

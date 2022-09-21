@@ -45,6 +45,15 @@
     <ClCompile Include="mytime.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="User_List.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Commodity_List.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Order_List.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h">
@@ -72,6 +81,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="mytime.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="User_List.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Commodity_List.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Order_List.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

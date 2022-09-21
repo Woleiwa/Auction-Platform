@@ -28,30 +28,6 @@ struct order_list
 	order_list* next;
 };
 
-class Order_List
-{
-private:
-	order_list* head = NULL, * tail = NULL;
-public:
-	bool Read_from_txt();
-
-	void Write_to_txt();
-
-	void Add_to_list(order& info);
-
-	order_list* admin_check();
-
-	order_list* consumer_check(string uid);
-
-	order_list* seller_check(string uid);
-	
-	double max_price(string commodity_id);
-
-	void OffShelf(string cid);
-
-	void freeze_user(string id);
-};
-
 class Order
 {
 private:
@@ -64,6 +40,8 @@ public:
 	order my_info(order info);
 
 	void add_to_olist();
+
+	void Cancel_order();
 };
 
 #endif // !_ORDER_

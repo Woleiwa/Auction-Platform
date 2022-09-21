@@ -29,7 +29,7 @@ public:
 
 	my_time current_time();
 
-	bool reach_time_gap(Time date);
+	bool reach_time_gap();
 
 	my_time string_to_time(string stringfied_time);
 

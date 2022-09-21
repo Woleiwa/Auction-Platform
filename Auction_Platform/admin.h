@@ -25,6 +25,8 @@ public:
 
 	void get_information();
 
+	void search();
+
 	void check_mail();
 };
 #endif // !_ADMIN_

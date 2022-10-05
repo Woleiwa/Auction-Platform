@@ -2,6 +2,8 @@
 #include<mutex>
 #include"commodity.h"
 #include"User_List.h"
+#include<vector>
+#include<algorithm>
 
 extern mutex o_mtx;
 
@@ -37,6 +39,10 @@ static order string_to_info(string str_info)
 	string bid(str_info, head, rear - head);
 
 	head = rear + 1;
+	rear = str_info.find(',', head);
+	string str_num(str_info, head, rear - head);
+
+	head = rear + 1;
 	rear = str_info.length();
 	string str_st(str_info, head, rear - head);
 
@@ -47,6 +53,7 @@ static order string_to_info(string str_info)
 	strcpy(res.commodity_name, commodity_name.c_str());
 	strcpy(res.seller_id, seller_id.c_str());
 	res.bid = stod(bid);
+	res.num = stoi(str_num);
 	res.st = Waiting;
 	if (str_st == "Deal")
 	{
@@ -71,6 +78,7 @@ static string info_to_string(order info)
 	Time time(info.time);
 	string str_time = time.time_to_string();
 	string bid = to_string(info.bid);
+	string str_num = to_string(info.num);
 	string state = "Waiting";
 	if (info.st == Deal)
 	{
@@ -80,11 +88,11 @@ static string info_to_string(order info)
 	{
 		state = "Cancel";
 	}
-	string str_info = order_id + ',' + c_id + ',' + c_name + ',' + s_id + ',' + a_id + ',' + str_time + ',' + bid + ',' + state;
+	string str_info = order_id + ',' + c_id + ',' + c_name + ',' + s_id + ',' + a_id + ',' + str_time + ',' + bid + ',' + str_num + ',' + state;
 	return str_info;
 }
 
-bool Order_List::Read_from_txt()
+bool Order_List::read_from_txt()
 {
 	o_mtx.lock();
 	this->head = NULL;
@@ -134,7 +142,7 @@ bool Order_List::Read_from_txt()
 
 }
 
-void Order_List::Write_to_txt()
+void Order_List::write_to_txt()
 {
 	o_mtx.lock();
 	ofstream userfile("order.txt");
@@ -156,7 +164,7 @@ void Order_List::Write_to_txt()
 	o_mtx.unlock();
 }
 
-void Order_List::Add_to_list(order& info)
+void Order_List::add_to_list(order& info)
 {
 	if (this->head == NULL)
 	{
@@ -250,7 +258,7 @@ double Order_List::max_price(string commodity_id)
 	double price = commodity.my_info().price;
 	while (check_head)
 	{
-		if (check_head->data.commodity_id == commodity_id)
+		if (check_head->data.commodity_id == commodity_id && check_head->data.st == Waiting)
 		{
 			if (check_head->data.bid > price)
 			{
@@ -262,7 +270,7 @@ double Order_List::max_price(string commodity_id)
 	return price;
 }
 
-void Order_List::OffShelf(string cid)
+void Order_List::offshelf(string cid)
 {
 	order_list* head = this->head;
 	while (head)
@@ -288,53 +296,78 @@ void Order_List::freeze_user(string id)
 	}
 }
 
-bool Order_List::update(string commodity_id)
+int Order_List::update(commodity_inform info)
 {
-	bool res = false;
+	int res = 0;
 	order_list* head = this->head;
-	double max = 0;
+	vector<order>olist;
+	vector<order_list*>reslist;
+	string c_id = info.id;
 	while (head)
 	{
-		if (head->data.commodity_id == commodity_id && head->data.st == Waiting)
+		if (head->data.commodity_id == c_id && head->data.st == Waiting)
 		{
-			if (head->data.bid > max)
-			{
-				max = head->data.bid;
-				res = true;
-			}
+			olist.push_back(head->data);
 		}
+		reslist.push_back(head);
 		head = head->next;
 	}
-	if (!res)
+	if (olist.empty())
 	{
 		return res;
 	}
-	else
+	sort(olist.begin(), olist.end());
+	reverse(olist.begin(), olist.end());
+	User_List uplist;
+	uplist.read_from_txt();
+	for (int i = 0; i < olist.size() && info.num > 0; i++)
 	{
-		head = this->head;
-		string seller_id;
-		string auctioneer_id;
-		while (head)
+		int num = 0;
+		if (olist[i].num < info.num)
 		{
-			if (head->data.commodity_id == commodity_id && head->data.st == Waiting)
-			{
-				if (head->data.bid == max)
-				{
-					head->data.st = Deal;
-					seller_id = head->data.seller_id;
-					auctioneer_id = head->data.auctioneer;
-				}
-				else
-				{
-					head->data.st = Cancel;
-				}
-			}
-			head = head->next;
+			num = olist[i].num;
+			info.num -= num;
 		}
-		User_List upulist;
-		upulist.Read_from_txt();
-		upulist.update(seller_id, auctioneer_id, max);
-		upulist.Write_to_txt();
+		else
+		{
+			num = info.num;
+			info.num = 0;
+		}
+		res += num;
+		double cost = num * olist[i].bid;
+		string str_id(olist[i].order_id, 1, 5);
+		int id = stoi(str_id);
+		reslist[id - 1]->data.st = Deal;
+		reslist[id - 1]->data.num = num;
+		uplist.update(olist[i].seller_id, olist[i].auctioneer, cost);
 	}
+	uplist.write_to_txt();
 	return res;
+}
+
+void Order_List::modify_information(string cid, string new_name)
+{
+	order_list* list = this->head;
+	while (list)
+	{
+		if (list->data.commodity_id == cid)
+		{
+			strcpy(list->data.commodity_name, new_name.c_str());
+		}
+		list = list->next;
+	}
+}
+
+void Order_List::cancel_order(string oid)
+{
+	order_list* list = this->head;
+	while (list)
+	{
+		if (list->data.order_id == oid)
+		{
+			list->data.st = Cancel;
+			break;
+		}
+		list = list->next;
+	}
 }

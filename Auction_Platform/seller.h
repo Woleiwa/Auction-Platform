@@ -21,9 +21,11 @@ public:
 
 	void check_order();
 
-	void change_commo_information();
+	void modify_commo_information();
 
 	void off_shelf();
+
+	void re_on_shelf();
 };
 
 #endif

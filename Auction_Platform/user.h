@@ -35,13 +35,13 @@ public:
 
 	User(string id);
 
-	void Log_in();
+	virtual void operate();
 
-	bool Change_information();
+	bool modify_information();
 
-	bool Charge();
+	bool charge();
 
-	void Freeze();
+	void freeze();
 
 	inform get_inform();
 
@@ -49,6 +49,8 @@ public:
 
 	void virtual check_commodity();
 
-	void Thaw();
+	void thaw();
+
+	void check_mail();
 };
 #endif // !_USER_

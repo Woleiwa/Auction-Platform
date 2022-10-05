@@ -28,9 +28,9 @@ int main()
 int main()
 {
 	User_List ulist;
-	ulist.Read_from_txt();
-	//ulist.Regist();
-	ulist.Sign_in();
+	ulist.read_from_txt();
+	//ulist.user_register();
+	ulist.sign_in();
 }
 #endif // _USERTEST_
 
@@ -43,37 +43,94 @@ int main()
 #endif // _ADMINTEST_
 
 #ifdef _MAIN_
-void Start();
-void Update();
+void start();
+void update();
+int instruction_input(int mini, int max, string opline);
+static const string operate_line = "instruction£º1.user_login 2.user_register 3.admin_login 4.forget_password 5.exit";
 mutex o_mtx;
 mutex c_mtx;
 mutex u_mtx;
-bool update = true;
+bool update_flag = true;
 User_List ulist;
 Order_List olist;
 Commodity_List clist;
 
 int main()
 {
-	thread t1(Start);
-	thread t2(Update);
+	thread t1(start);
+	thread t2(update);
 	t1.join();
 	t2.join();
 }
 
-void Start()
+void start()
 {
 	system("cls");
 	cout << "Welcome to my auction platform!" << endl;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN );
 	cout << "==============================================================================================================" << endl;
-	cout << "instruction£º1.user_login 2.user_regist 3.admin_login 4.forget_password 5.exit" << endl;
+	cout << operate_line << endl;
 	cout << "==============================================================================================================" << endl;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 	cout << "Please input your instruction£º";
+	int judge = instruction_input(1, 5, operate_line);
+	if (judge == 1)
+	{
+		
+		ulist.read_from_txt();
+		ulist.sign_in();
+		start();
+	}
+	else if (judge == 2)
+	{
+		ulist.read_from_txt();
+		ulist.user_register();
+		start();
+	}
+	else if (judge == 3)
+	{
+		Admin admin;
+		admin.admin_operate();
+		start();
+	}
+	else if (judge == 4)
+	{
+		ulist.read_from_txt();
+		ulist.forget_password();
+		ulist.write_to_txt();
+		start();
+	}
+	else
+	{
+		update_flag = false;
+		cout << "******See you!******" << endl;
+		Sleep(1500);
+		return;
+	}
+}
+
+void update()
+{
+	Commodity_List upclist;
+	while (update_flag)
+	{	
+		upclist.read_from_txt();
+		if (upclist.update())
+		{
+			upclist.write_to_txt();
+			cout << endl<<"Information updated!" << endl;
+		}
+		Sleep(128);
+	}
+}
+
+int instruction_input(int mini, int max, string opline)
+{
 	int judge;
 	cin >> judge;
-	while ((judge != 1 && judge != 2 && judge != 3 && judge != 4 && judge != 5) || cin.fail())
+	while (judge > max || judge < mini|| cin.fail())
 	{
-		if (cin.fail())
+		while (cin.fail())
 		{
 			cin.clear();
 			cin.ignore();
@@ -81,61 +138,15 @@ void Start()
 		system("cls");
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
 		cout << "******Error input******" << endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN);
+		cout << "==============================================================================================================" << endl;
+		cout << opline << endl;
+		cout << "==============================================================================================================" << endl;
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-		cout << "==============================================================================================================" << endl;
-		cout << "instruction£º1.user_login 2.user_regist 3.admin_login 4.forget_password 5.exit" << endl;
-		cout << "==============================================================================================================" << endl;
 		cout << "Please input your instruction£º";
 		cin >> judge;
 	}
-	if (judge == 1)
-	{
-		
-		ulist.Read_from_txt();
-		ulist.Sign_in();
-		Start();
-	}
-	else if (judge == 2)
-	{
-		ulist.Read_from_txt();
-		ulist.Regist();
-		Start();
-	}
-	else if (judge == 3)
-	{
-		Admin admin;
-		admin.admin_operate();
-		Start();
-	}
-	else if (judge == 4)
-	{
-		ulist.Read_from_txt();
-		ulist.Forget_Password();
-		ulist.Write_to_txt();
-		Start();
-	}
-	else
-	{
-		update = false;
-		cout << "******See you!******" << endl;
-		Sleep(1500);
-		return;
-	}
+	return judge;
 }
 
-void Update()
-{
-	Commodity_List upclist;
-	while (update)
-	{	
-		upclist.Read_from_txt();
-		if (upclist.update())
-		{
-			upclist.Write_to_txt();
-			cout << endl<<"Information updated!" << endl;
-		}
-		Sleep(128);
-	}
-	
-}
 #endif // _MAIN_

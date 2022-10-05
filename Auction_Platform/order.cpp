@@ -8,7 +8,7 @@ extern Order_List olist;
 extern User_List ulist;
 extern mutex o_mtx;
 
-Order::Order(string seller_id, string auctioneer_id, string commodity_id, string commodity_name, double bid)
+Order::Order(string seller_id, string auctioneer_id, string commodity_id, string commodity_name, double bid, int num)
 {
 	strcpy(this->info.seller_id, seller_id.c_str());
 	strcpy(this->info.auctioneer, auctioneer_id.c_str());
@@ -18,6 +18,7 @@ Order::Order(string seller_id, string auctioneer_id, string commodity_id, string
 	Time time;
 	this->info.time = time.current_time();
 	this->info.st = Waiting;
+	this->info.num = num;
 }
 
 Order::Order(order info)
@@ -32,8 +33,8 @@ order Order::my_info(order info)
 
 void Order::add_to_olist()
 {
-	olist.Read_from_txt();
-	olist.Add_to_list(this->info);
-	olist.Write_to_txt();
+	olist.read_from_txt();
+	olist.add_to_list(this->info);
+	olist.write_to_txt();
 }
 

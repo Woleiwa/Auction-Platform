@@ -16,14 +16,16 @@
 #include<mutex>
 #include"Commodity_List.h"
 #include"Order_List.h"
+#include"Mail_List.h"
 using namespace std;
 extern mutex u_mtx;
 extern User_List ulist;
 extern Order_List olist;
 extern Commodity_List clist;
-extern void Start();
 extern void confidential_input(char password[]);
 extern bool Judge(char password[20]);
+extern int instruction_input(int mini, int max, string opline);
+static const string operate_line = "instruction:1.seller function 2.consumer function 3.modify information 4.charge 5.check massage 6.exit";
 
 User::User()
 {
@@ -32,7 +34,7 @@ User::User()
 
 User::User(string id)
 {
-	ulist.Read_from_txt();
+	ulist.read_from_txt();
 	inform_list* head = ulist.get_information();
 	while (head)
 	{
@@ -48,61 +50,46 @@ User::User(string id)
 	}
 }
 
-void User::Log_in()
+void User::operate()
 {
 	system("cls");
 	cout << "*******Welcome to User Platform*******" << endl;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN );
 	cout << "==============================================================================================================" << endl;
-	cout << "instruction:1.seller function 2.consumer function 3.modify information 4.charge 5.check e_mail 6.quit " << endl;
+	cout << operate_line << endl;
 	cout << "==============================================================================================================" << endl;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 	cout << "Please input£º";
-	int judge;
-	cin >> judge;
-	while ((judge != 1 && judge != 2 && judge != 3 && judge != 4 && judge != 5 && judge != 6) || cin.fail())
-	{
-		if (cin.fail())
-		{
-			cin.clear();
-			cin.ignore();
-		}
-		system("cls");
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
-		cout << "******Error input******" << endl;
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-		cout << "==============================================================================================================" << endl;
-		cout << "instruction:1.seller function 2.consumer function 3.modify information 4.charge 5.check e_mail 6.quit "<< endl;
-		cout << "==============================================================================================================" << endl;
-		cout << "Please input£º";
-		cin >> judge;
-	}
+	int judge = instruction_input(1,6,operate_line);
 	Seller seller(this->my_inform.id);
 	Consumer consumer(this->my_inform.id);
 	switch (judge)
 	{
 	case 1:
 		seller.operate();
-		this->Log_in();
+		this->operate();
 		break;
 	case 2:
 		consumer.operate();
-		this->Log_in();
+		this->operate();
 		break;
 	case 3:
-		if (this->Change_information())
+		if (this->modify_information())
 		{
-			this->Log_in();
+			this->operate();
 		}
 		return;
 		break;
 	case 4:
-		if (this->Charge())
+		if (this->charge())
 		{
-			this->Log_in();
+			this->operate();
 		}
 		return;
 		break;
 	case 5:
-
+		this->check_mail();
+		this->operate();
 		break;
 	case 6:
 		return;
@@ -127,11 +114,11 @@ void User::check_commodity()
 
 }
 
-bool User::Change_information()
+bool User::modify_information()
 {
 	bool res = true;
 	string uid = this->my_inform.id;
-	ulist.Read_from_txt();
+	ulist.read_from_txt();
 	inform_list* pointer = ulist.find_one_user(uid);
 	cout << "My user id:" << this->my_inform.id << endl;
 	cout << "My user name:" << this->my_inform.name << endl;
@@ -179,7 +166,7 @@ bool User::Change_information()
 		}
 		strcpy(this->my_inform.name, new_name.c_str());
 		strcpy(pointer->data.name, new_name.c_str());
-		ulist.Write_to_txt();
+		ulist.write_to_txt();
 		cout << "Modify successfully!" << endl;
 		Sleep(200);
 	}
@@ -193,7 +180,7 @@ bool User::Change_information()
 		}
 		strcpy(this->my_inform.address, new_address.c_str());
 		strcpy(pointer->data.address, new_address.c_str());
-		ulist.Write_to_txt();
+		ulist.write_to_txt();
 		cout << "Modify successfully!" << endl;
 		Sleep(200);
 	}
@@ -207,7 +194,7 @@ bool User::Change_information()
 		}
 		strcpy(this->my_inform.contact, new_contact.c_str());
 		strcpy(pointer->data.contact, new_contact.c_str());
-		ulist.Write_to_txt();
+		ulist.write_to_txt();
 		cout << "Modify successfully!" << endl;
 		Sleep(200);
 	}
@@ -259,30 +246,29 @@ bool User::Change_information()
 			pointer->data.md5_code[2] = md5[2];
 			pointer->data.md5_code[3] = md5[3];
 
-			ulist.Write_to_txt();
+			ulist.write_to_txt();
 			cout << "Modify successfully!" << endl;
 			Sleep(200);
 		}
 		else
 		{
-			this->Freeze();
+			this->freeze();
 			res = false;
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
 			cout << "You have been frozen!" << endl;
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 			Sleep(200);
-			Start();
 		}
 	}
 	return res;
 }
 
-bool User::Charge()
+bool User::charge()
 {
 	bool res = true;
 	char password[20];
 	string uid = this->my_inform.id;
-	ulist.Read_from_txt();
+	ulist.read_from_txt();
 	inform_list* pointer = ulist.find_one_user(uid);
 	cout << "Please input your  password:"<<endl;
 	confidential_input(password);
@@ -316,43 +302,118 @@ bool User::Charge()
 		}
 		this->my_inform.money += add;
 		pointer->data.money += add;
-		ulist.Write_to_txt();
+		ulist.write_to_txt();
 	}
 	else
 	{
-		this->Freeze();
+		this->freeze();
 		res = false;
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
 		cout << "You have been frozen!" << endl;
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		Sleep(200);
-		Start();
 	}
 	return res;
 }
 
-void User::Freeze()
+void User::freeze()
 {
 	string uid = this->my_inform.id;
-	ulist.Read_from_txt();
+	ulist.read_from_txt();
 	inform_list* pointer = ulist.find_one_user(uid);
 	this->my_inform.con = frozen;
 	pointer->data.con = frozen;
-	ulist.Write_to_txt();
-	clist.Read_from_txt();
+	ulist.write_to_txt();
+	clist.read_from_txt();
 	clist.freeze_user(this->my_inform.id);
-	clist.Write_to_txt();
-	olist.Read_from_txt();
+	clist.write_to_txt();
+	olist.read_from_txt();
 	olist.freeze_user(this->my_inform.id);
-	olist.Write_to_txt();
+	olist.write_to_txt();
 }
 
-void User::Thaw()
+void User::thaw()
 {
 	string uid = this->my_inform.id;
-	ulist.Read_from_txt();
+	ulist.read_from_txt();
 	inform_list* pointer = ulist.find_one_user(uid);
 	this->my_inform.con = active;
 	pointer->data.con = active;
-	ulist.Write_to_txt();
+	ulist.write_to_txt();
+}
+
+void User::check_mail()
+{
+	contacter* head = NULL;
+	ulist.read_from_txt();
+	string uid = this->my_inform.id;
+	head = ulist.my_contacter(uid);
+	contacter* list = head;
+	cout << "Admin" << endl;
+	while (list)
+	{
+		cout << list->uid << endl;
+		list = list->next;
+	}
+	cout << "Please input the people you want to send massage to:" << endl;
+	string receiver;
+	cin >> receiver;
+	bool flag = false;
+	if (receiver == "Admin")
+	{
+		flag = true;
+	}
+	else
+	{
+		list = head;
+		while (list)
+		{
+			if (list->uid == receiver)
+			{
+				flag = true;
+				break;
+			}
+			list = list->next;
+		}
+	}
+	if (!flag)
+	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
+		cout << "No such user!" << endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+		system("pause");
+		return;
+	}
+	while (flag)
+	{
+		Mail_List mlist(uid, receiver);
+		mlist.read_from_txt();
+		system("cls");
+		mail_list* mhead = mlist.get_mails();
+		while (mhead)
+		{
+			Mail cur_mail(uid, receiver, mhead->data);
+			cur_mail.print_mail(uid);
+			mhead = mhead->next;
+		}
+		mlist.read_mails(uid);
+		mlist.write_to_txt();
+		cout << "If you want to send a massage, please input 'yes':" << endl;
+		string judge;
+		cin >> judge;
+		if (judge == "yes")
+		{
+			string content;
+			cout << "Please input your massage:" << endl;
+			cin >> content;
+			Mail new_mail(uid, receiver, content);
+			new_mail.add_to_list();
+		}
+		else
+		{
+			flag = false;
+		}
+	}
+	system("pause");
+	return;
 }

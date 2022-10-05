@@ -46,6 +46,10 @@ static commodity_inform string_to_info(string str_info)
 
 	head = rear + 1;
 	rear = str_info.find(',', head);
+	string str_num(str_info, head, rear - head);
+
+	head = rear + 1;
+	rear = str_info.find(',', head);
 	string str_time(str_info, head, rear - head);
 
 	head = rear + 1;
@@ -66,6 +70,7 @@ static commodity_inform string_to_info(string str_info)
 
 	res.price = stod(price);
 	res.add_price = stod(add_pirce);
+	res.num = stoi(str_num);
 
 	Time time;
 	res.auction_time = time.string_to_time(str_time);
@@ -82,6 +87,10 @@ static commodity_inform string_to_info(string str_info)
 	{
 		res.st = OffShelf;
 	}
+	else if (st == "Timeout")
+	{
+		res.st = Timeout;
+	}
 	return res;
 }
 
@@ -91,6 +100,7 @@ static string info_to_string(commodity_inform info)
 	string name = info.name;
 	string price = to_string(info.price);
 	string add_price = to_string(info.add_price);
+	string str_num = to_string(info.num);
 	Time time(info.auction_time);
 	string str_time = time.time_to_string();
 	string user_id = info.user_id;
@@ -104,11 +114,15 @@ static string info_to_string(commodity_inform info)
 	{
 		st = "OffShelf";
 	}
-	string str_info = id + ',' + name + ',' + price + ',' + add_price + ',' + str_time + ',' + user_id + ',' + st + ',' + description;
+	else if (info.st == Timeout)
+	{
+		st = "Timeout";
+	}
+	string str_info = id + ',' + name + ',' + price + ',' + add_price + ',' + str_num + ',' + str_time + ',' + user_id + ',' + st + ',' + description;
 	return str_info;
 }
 
-bool Commodity_List::Read_from_txt()
+bool Commodity_List::read_from_txt()
 {
 	c_mtx.lock();
 	commodity_list* cur = this->head;
@@ -165,7 +179,7 @@ bool Commodity_List::Read_from_txt()
 	return true;
 }
 
-void Commodity_List::Write_to_txt()
+void Commodity_List::write_to_txt()
 {
 	c_mtx.lock();
 	ofstream userfile("commodity.txt");
@@ -187,7 +201,7 @@ void Commodity_List::Write_to_txt()
 	c_mtx.unlock();
 }
 
-void Commodity_List::Add_commodity(commodity_inform& info)
+void Commodity_List::add_commodity(commodity_inform& info)
 {
 	if (tail == NULL)
 	{
@@ -214,7 +228,7 @@ void Commodity_List::Add_commodity(commodity_inform& info)
 		tail->next = NULL;
 		tail->data = info;
 	}
-	Write_to_txt();
+	write_to_txt();
 }
 
 commodity_list* Commodity_List::consumer_check(char id[20])
@@ -402,7 +416,7 @@ void Merge_sort(commodity_relevant list[], int begin, int end)
 			order_list[cur++] = list[j++];
 		}
 	}
-	if (i < mid)
+	if (i <= mid)
 	{
 		while (i <= mid)
 		{
@@ -422,7 +436,7 @@ void Merge_sort(commodity_relevant list[], int begin, int end)
 	}
 }
 
-void Commodity_List::Set_relevance(commodity_relevant list[], string keys)
+void Commodity_List::set_relevance(commodity_relevant list[], string keys)
 {
 	int cur = 0;
 	int key_num = 1;
@@ -469,7 +483,7 @@ void Commodity_List::Set_relevance(commodity_relevant list[], string keys)
 commodity_list* Commodity_List::admin_search_by_key_word(string key)
 {
 	commodity_relevant* list = new commodity_relevant[this->num];
-	Set_relevance(list, key);
+	set_relevance(list, key);
 	commodity_list* res_head = NULL, * res_tail = NULL;
 	int i = 0;
 	while (i < this->num)
@@ -501,7 +515,7 @@ commodity_list* Commodity_List::admin_search_by_key_word(string key)
 commodity_list* Commodity_List::consumer_search_by_key_word(string key)
 {
 	commodity_relevant* list = new commodity_relevant[this->num];
-	Set_relevance(list, key);
+	set_relevance(list, key);
 	commodity_list* res_head = NULL, * res_tail = NULL;
 	int i = 0;
 	while (i < this->num)
@@ -536,6 +550,7 @@ commodity_list* Commodity_List::consumer_search_by_key_word(string key)
 bool Commodity_List::update()
 {
 	commodity_list* head = this->head;
+	bool res = false;
 	while (head)
 	{
 		if (head->data.st == OnSale)
@@ -543,22 +558,22 @@ bool Commodity_List::update()
 			Time time(head->data.auction_time);
 			if (time.reach_time_gap())
 			{
-				string cid = head->data.id;
 				Order_List upolist;
-				upolist.Read_from_txt();
-				if (upolist.update(cid))
+				upolist.read_from_txt();
+				int num = upolist.update(head->data);
+				if ((head->data.num -= num) == 0)
 				{
 					head->data.st = Sold;
-					upolist.Write_to_txt();
 				}
 				else
 				{
-					head->data.st = OffShelf;
+					head->data.st = Timeout;
 				}
-				return true;
+				upolist.write_to_txt();
+				res = true;
 			}
 		}
 		head = head->next;
 	}
-	return false;
+	return res;
 }

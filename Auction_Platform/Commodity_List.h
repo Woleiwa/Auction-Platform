@@ -10,17 +10,17 @@ public:
 
 	~Commodity_List();
 
-	bool Read_from_txt();
+	bool read_from_txt();
 
-	void Write_to_txt();
+	void write_to_txt();
 
-	void Add_commodity(commodity_inform& info);
+	void add_commodity(commodity_inform& info);
 
 	commodity_inform admin_search_by_id(string id);
 
 	commodity_inform consumer_search_by_id(string id);
 
-	void Set_relevance(commodity_relevant list[], string keys);
+	void set_relevance(commodity_relevant list[], string keys);
 
 	commodity_list* admin_search_by_key_word(string key);
 

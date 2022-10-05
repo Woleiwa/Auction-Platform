@@ -8,27 +8,51 @@
 #include"User_List.h"
 #include"Order_List.h"
 #include"Commodity_List.h"
+#include"Mail_List.h"
+using namespace std;
 extern User_List ulist;
 extern Order_List olist;
 extern Commodity_List clist;
-static void confidential_input(char password[])
+extern void confidential_input(char password[]);
+extern int instruction_input(int mini, int max, string opline);
+static const string operate_line = "instruction£º1.check commodities 2.search commodities 3.check orders 4.check users 5.freeze users\n6.thaw users 7.offshelf commodities 8.commodity information 9.massages 10.log out" ;
+
+void display_commodity(commodity_list* head)
 {
-	char ch;
-	int index = 0;
-	while ((ch = _getch()) != '\r')
+	if (head == NULL)
 	{
-		if (ch != '\b')
-		{
-			cout << "*";
-			password[index++] = ch;
-		}
-		else
-		{
-			cout << '\b';
-			index--;
-		}
+		cout << "Users haven't released any commodity." << endl;
 	}
-	password[index++] = '\0';
+	else
+	{
+		cout << left << setw(8) << "Id" << setw(30) << "Name" << setw(8) << "price" << setw(8) << "markup" << setw(8) << "number" << setw(8) << "seller_id" << setw(24) << "releasing time" << setw(12) << "state";
+		while (head)
+		{
+			Time time(head->data.auction_time);
+			string str_time = time.time_to_string();
+			string state = "OnSale";
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_GREEN);
+			if (head->data.st == Sold)
+			{
+				state = "Sold";
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_BLUE);
+			}
+			else if (head->data.st == OffShelf)
+			{
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE);
+				state = "OffShelf";
+			}
+			else if (head->data.st == Timeout)
+			{
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_BLUE);
+				state = "Timeout";
+			}
+			cout << endl << left << setw(8) << head->data.id << setw(30) << head->data.name << setw(8) << head->data.price << setw(8) << head->data.add_price
+				<< setw(8) << head->data.num << setw(8) << head->data.user_id << setw(24) << str_time << setw(12) << state;
+			head = head->next;
+		}
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+	}
 }
 
 Admin::Admin()
@@ -58,31 +82,13 @@ void Admin::admin_operate()
 {
 	system("cls");
 	cout << "******Welcome to Admin platform******" << endl;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN );
 	cout << "==============================================================================================================" << endl;
-	cout << "instruction£º1.check commodities 2.search commodities 3.check orders 4.check users 5.freeze users"<<endl
-		 << "6.thaw users 7.offshelf commodities 8.commodity information 9.massages 10.log out" << endl;
+	cout << operate_line << endl;
 	cout << "==============================================================================================================" << endl;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 	cout << "Please input:";
-	int judge;
-	cin >> judge;
-	while ((judge != 1 && judge != 2 && judge != 3 && judge != 4 && judge != 5 && judge != 6 && judge != 7 && judge != 8 && judge != 9 && judge != 10) || cin.fail())
-	{
-		if (cin.fail())
-		{
-			cin.clear();
-			cin.ignore();
-		}
-		system("cls");
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
-		cout << "******Error input******" << endl;
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-		cout << "==============================================================================================================" << endl;
-		cout << "instruction£º1.check commodities 2.search commodities 3.check orders 4.check users 5.freeze users" << endl
-			 << "6.thaw users 7.offshelf commodities 8.commodity information 9.massages 10.log out" << endl;
-		cout << "==============================================================================================================" << endl;
-		cout << "Please input:";
-		cin >> judge;
-	}
+	int judge = instruction_input(1, 10, operate_line);
 	switch (judge)
 	{
 	case 1:
@@ -118,10 +124,11 @@ void Admin::admin_operate()
 		admin_operate();
 		break;
 	case 9:
-		
+		check_mail();
+		admin_operate();
 		break;
 	case 10:
-
+		return;
 		break;
 	default:
 		break;
@@ -130,11 +137,12 @@ void Admin::admin_operate()
 
 void Admin::check_user()
 {
-	ulist.Read_from_txt();
+	ulist.read_from_txt();
 	inform_list* head = ulist.get_information();
 	cout << left << setw(12) << "User_id" << setw(12) << "Name" << setw(12) << "Address" 
-		<< setw(12) << "Contact" << setw(16) << "Balance" << setw(24) << "Regist_time" << setw(12) << "State"<< endl;
-	cout << "=============================================================================================" << endl;
+		<< setw(12) << "Contact" << setw(16) << "Balance" << setw(24) << "register_time" << setw(12) << "State"<< endl;
+	cout << "==============================================================================================================" << endl;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN);
 	while (head)
 	{
 		Time time(head->data.register_time);
@@ -143,50 +151,29 @@ void Admin::check_user()
 		if (head->data.con == frozen)
 		{
 			state = "frozen";
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_BLUE);
 		}
 		cout << left << setw(12) << head->data.id << setw(12) << head->data.name << setw(12) 
 			<< head->data.address << setw(12) << head->data.contact << setw(16) << head->data.money << setw(24) 
 			<< str_time << setw(12) << state << endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN);
 		head = head->next;
 	}
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 	system("pause");
 }
 
 void Admin::check_commodity()
 {
-	clist.Read_from_txt();
+	clist.read_from_txt();
 	commodity_list* head = clist.admin_check();
-	if (head == NULL)
-	{
-		cout << "Users haven't released any commodity." << endl;
-	}
-	else
-	{
-		cout << left << setw(12) << "Id" << setw(20) << "Name" << setw(12) << "price" << setw(12) << "markup" <<setw(12)<<"seller_id"<< setw(24) << "releasing time" << setw(12) << "state";
-		while (head)
-		{
-			Time time(head->data.auction_time);
-			string str_time = time.time_to_string();
-			string state = "OnSale";
-			if (head->data.st == Sold)
-			{
-				state = "Sold";
-			}
-			else if (head->data.st == OffShelf)
-			{
-				state = "OffShelf";
-			}
-			cout<<endl << left << setw(12) << head->data.id << setw(20) << head->data.name << setw(12) << head->data.price << setw(12) << head->data.add_price
-				<< setw(12) << head->data.user_id << setw(24) << str_time << setw(12) << state;
-			head = head->next;
-		}
-	}
+	display_commodity(head);
 	system("pause");
 }
 
 void Admin::check_order()
 {
-	olist.Read_from_txt();
+	olist.read_from_txt();
 	order_list* head = olist.admin_check();
 	if (head == NULL)
 	{
@@ -194,30 +181,34 @@ void Admin::check_order()
 		system("pause");
 		return;
 	}
-	cout << left << setw(12) << "Order" << setw(12) << "Seller"<< setw(12) << "Auctioneer" << setw(12) << "Commodity" << setw(20) << "Commodity name" << setw(12) << "Bid" << setw(24) << "Time" << setw(12) << "State" << endl;
+	cout << left << setw(8) << "Order" << setw(8) << "Seller"<< setw(8) << "Auction" << setw(8) << "Commo_id" << setw(30) << "Commodity name" << setw(8) << "Bid" << setw(8) << "Number"<< setw(24) << "Time" << setw(12) << "State" << endl;
 	while (head)
 	{
 		string state = "Waiting";
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_GREEN);
 		if (head->data.st == Deal)
 		{
 			state = "Deal";
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_BLUE);
 		}
 		else if (head->data.st == Cancel)
 		{
 			state = "Cancel";
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE);
 		}
 		Time time(head->data.time);
 		string str_time = time.time_to_string();
-		cout << left << setw(12) << head->data.order_id << setw(12)<< head->data.seller_id << setw(12) << head->data.auctioneer << setw(12) << head->data.commodity_id << setw(20) << head->data.commodity_name
-			<< setw(12) << head->data.bid << setw(24) << str_time  << setw(12) << state << endl;
+		cout << left << setw(8) << head->data.order_id << setw(8)<< head->data.seller_id << setw(8) << head->data.auctioneer << setw(8) << head->data.commodity_id << setw(30) << head->data.commodity_name
+			<< setw(8) << head->data.bid << setw(8) << head->data.num << setw(24) << str_time  << setw(12) << state << endl;
 		head = head->next;
 	}
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
 	system("pause");
 }
 
 void Admin::off_shelf()
 {
-	clist.Read_from_txt();
+	clist.read_from_txt();
 	commodity_list* head = clist.admin_check();
 	if (head == NULL)
 	{
@@ -244,8 +235,8 @@ void Admin::off_shelf()
 		{
 			if (list->data.st == OnSale && list->data.id == id)
 			{
-				break;
 				flag = true;
+				break;
 			}
 			list = list->next;
 		}
@@ -266,7 +257,7 @@ void Admin::off_shelf()
 			}
 			else
 			{
-				cout << "Cancelled." << endl;
+				cout << "Operation has been cancelled!." << endl;
 			}
 		}
 	}
@@ -276,7 +267,7 @@ void Admin::off_shelf()
 
 void Admin::freeze_user()
 {
-	ulist.Read_from_txt();
+	ulist.read_from_txt();
 	inform_list* head = ulist.get_information();
 	inform_list* list = head;
 	bool flag = false;
@@ -321,12 +312,12 @@ void Admin::freeze_user()
 	cin >> judge;
 	if (judge == "yes")
 	{
-		user.Freeze();
-		cout << "Freeze successfully!" << endl;
+		user.freeze();
+		cout << "freeze successfully!" << endl;
 	}
 	else
 	{
-		cout << "Cancelled" << endl;
+		cout << "Operation has been cancelled!" << endl;
 	}
 	system("pause");
 	return;
@@ -334,7 +325,7 @@ void Admin::freeze_user()
 
 void Admin::thaw_user()
 {
-	ulist.Read_from_txt();
+	ulist.read_from_txt();
 	inform_list* head = ulist.get_information();
 	inform_list* list = head;
 	bool flag = false;
@@ -379,12 +370,12 @@ void Admin::thaw_user()
 	cin >> judge;
 	if (judge == "yes")
 	{
-		user.Thaw();
-		cout << "Thaw successfully!" << endl;
+		user.thaw();
+		cout << "thaw successfully!" << endl;
 	}
 	else
 	{
-		cout << "Cancelled" << endl;
+		cout << "Operation has been cancelled!" << endl;
 	}
 	system("pause");
 	return;
@@ -395,7 +386,7 @@ void Admin::get_information()
 	cout << "Please input the commodity id you want to check:" << endl;
 	string cid;
 	cin >> cid;
-	clist.Read_from_txt();
+	clist.read_from_txt();
 	commodity_inform info = clist.admin_search_by_id(cid);
 	if (strlen(info.id) == 0)
 	{
@@ -410,6 +401,7 @@ void Admin::get_information()
 		cout << "Commodity price:" << info.price << endl;
 		cout << "Commodity markup:" << info.add_price << endl;
 		cout << "Commodity description:" << info.description << endl;
+		cout << "Commodity number:" << info.num << endl;
 		Time time(info.auction_time);
 		string str_time = time.time_to_string();
 		cout << "On shelf time:" << str_time << endl;
@@ -421,6 +413,10 @@ void Admin::get_information()
 		else if (info.st == OffShelf)
 		{
 			state = "OffShelf";
+		}
+		else if (info.st == Timeout)
+		{
+			state = "Timeout";
 		}
 		cout << "State:" << state << endl;
 		system("pause");
@@ -436,32 +432,77 @@ void Admin::search()
 		getline(cin, key_words);
 	}
 	commodity_list* head = NULL;
-	clist.Read_from_txt();
+	clist.read_from_txt();
 	head = clist.admin_search_by_key_word(key_words);
-	if (head == NULL)
+	display_commodity(head);
+	system("pause");
+}
+
+void Admin::check_mail()
+{
+	contacter* head = NULL;
+	ulist.read_from_txt();
+	string uid = "Admin";
+	head = ulist.my_contacter();
+	contacter* list = head;
+	while (list)
 	{
-		cout << "Users haven't released any relevant commodity." << endl;
+		cout << list->uid << endl;
+		list = list->next;
 	}
-	else
+	cout << "Please input the people you want to send massage to:" << endl;
+	string receiver;
+	cin >> receiver;
+	bool flag = false;
+	
+	list = head;
+	while (list)
 	{
-		cout << left << setw(12) << "Id" << setw(20) << "Name" << setw(12) << "price" << setw(12) << "markup" << setw(12) << "seller_id" << setw(24) << "releasing time" << setw(12) << "state";
-		while (head)
+		if (list->uid == receiver)
 		{
-			Time time(head->data.auction_time);
-			string str_time = time.time_to_string();
-			string state = "OnSale";
-			if (head->data.st == Sold)
-			{
-				state = "Sold";
-			}
-			else if (head->data.st == OffShelf)
-			{
-				state = "OffShelf";
-			}
-			cout << endl << left << setw(12) << head->data.id << setw(20) << head->data.name << setw(12) << head->data.price << setw(12) << head->data.add_price
-				<< setw(12) << head->data.user_id << setw(24) << str_time << setw(12) << state;
-			head = head->next;
+			flag = true;
+			break;
+		}
+		list = list->next;
+	}
+	if (!flag)
+	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED );
+		cout << "No such user!" << endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+		system("pause");
+		return;
+	}
+	while (flag)
+	{
+		Mail_List mlist(uid, receiver);
+		mlist.read_from_txt();
+		system("cls");
+		mail_list* mhead = mlist.get_mails();
+		while (mhead)
+		{
+			Mail cur_mail(uid, receiver, mhead->data);
+			cur_mail.print_mail(uid);
+			mhead = mhead->next;
+		}
+		mlist.read_mails(uid);
+		mlist.write_to_txt();
+		cout << "If you want to send a massage, please input 'yes':" << endl;
+		string judge;
+		cin >> judge;
+		if (judge == "yes")
+		{
+			string content;
+			cout << "Please input your massage:" << endl;
+			cin >> content;
+			Mail new_mail(uid, receiver, content);
+			new_mail.add_to_list();
+		}
+		else
+		{
+			flag = false;
 		}
 	}
 	system("pause");
+	return;
 }

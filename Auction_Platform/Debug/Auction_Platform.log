@@ -1,12 +1,2 @@
-﻿  admin.cpp
-  commodity.cpp
-  Commodity_List.cpp
-  consumer.cpp
-  main.cpp
-  order.cpp
-  Order_List.cpp
-  seller.cpp
-  user.cpp
-  User_List.cpp
-  正在生成代码...
+﻿  seller.cpp
   Auction_Platform.vcxproj -> E:\code\Auction_Platform\Auction_Platform\Debug\Auction_Platform.exe

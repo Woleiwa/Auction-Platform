@@ -5,12 +5,13 @@
 #include<string>
 using namespace std;
 #include"mytime.h"
-enum State { OnSale, Sold, OffShelf };
+enum State { OnSale, Sold, OffShelf, Timeout };
 
 struct commodity_inform
 {
 	char id[10] = "\0";
 	char name[50] = "\0";
+	int num = 1;
 	double price = 0;
 	double add_price = 0;
 	my_time auction_time;
@@ -36,15 +37,19 @@ class Commodity
 private:
 	commodity_inform info;
 public:
-	Commodity(string name, double price, double add_pirce, string description, string uid);
+	Commodity(string name, double price, double add_pirce,int num,string description, string uid);
 
 	Commodity(string id);
 
-	void Create_commodity();
+	void create_commodity();
 
 	commodity_inform my_info();
 
 	void offshelf();
+
+	void modify_information(string judge, string new_info);
+
+	void commodity_re_onshelf();
 };
 #endif // !_COMMODITY_
 

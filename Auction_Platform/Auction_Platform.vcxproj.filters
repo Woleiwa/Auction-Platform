@@ -54,6 +54,9 @@
     <ClCompile Include="Order_List.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Mail_List.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h">
@@ -90,6 +93,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Order_List.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Mail_List.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

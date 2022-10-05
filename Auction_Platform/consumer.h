@@ -13,13 +13,15 @@ public:
 
 	void check_commodity();
 
-	void Auction();
+	void auction();
 
 	void get_information();
 
 	void search();
 
-	void Auction(string id);
+	void auction(string id);
+
+	void cancel_order();
 };
 
 #endif

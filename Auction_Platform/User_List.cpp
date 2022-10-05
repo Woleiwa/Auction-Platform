@@ -21,16 +21,18 @@ void confidential_input(char password[])
 {
 	char ch;
 	int index = 0;
+	const char a = '*';
+	const char b[4] = "\b \b";
 	while ((ch = _getch()) != '\r')
 	{
 		if (ch != '\b')
 		{
-			cout << '*';
+			printf("%c",a);
 			password[index++] = ch;
 		}
 		else
 		{
-			cout << '\b';
+			printf("%s", b);
 			index--;
 		}
 	}
@@ -168,7 +170,7 @@ User_List::~User_List()
 	}
 }
 
-bool User_List::Read_from_txt()
+bool User_List::read_from_txt()
 {
 	u_mtx.lock();
 	inform_list* cur = this->user_head;
@@ -217,7 +219,7 @@ bool User_List::Read_from_txt()
 	return true;
 }
 
-void User_List::Write_to_txt()
+void User_List::write_to_txt()
 {
 	u_mtx.lock();
 	ofstream userfile("user.txt");
@@ -271,11 +273,14 @@ bool Judge(char password[20])
 	return(j1 & j2 & j3);
 }
 
-void User_List::Regist()
+void User_List::user_register()
 {
 	string name;
 	cout << "Please input your user_name:";
-	getline(cin, name);
+	while (name.length() == 0)
+	{
+		getline(cin, name);
+	}
 	bool flag = false;
 
 	inform_list* head = user_head;
@@ -284,7 +289,10 @@ void User_List::Regist()
 		if (head->data.name == name)
 		{
 			cout << "Repeated name! Please choose a new one:";
-			getline(cin, name);
+			while (name.length() == 0)
+			{
+				getline(cin, name);
+			}
 			head = user_head;
 		}
 		else
@@ -293,26 +301,41 @@ void User_List::Regist()
 		}
 	}
 
-	char password[20];
+	char password[20] = "\0";
 	cout << "Please input your password(number,letter and captial required, no shorter than 9 characters):" << endl;
 
-	cin.getline(password, 19);
+	while (strlen(password)== 0)
+	{
+		cin.getline(password, 19);
+	}
+	
 
 	while (!Judge(password))
 	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED );
 		cout << "Please input an appropriate password:" << endl;
-		cin.getline(password, 19);
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+		while (strlen(password) == 0)
+		{
+			cin.getline(password, 19);
+		}
 	}
 
 	unsigned int* md5 = MD5_2(password);
 
 	string address;
 	cout << "Please input your address:" << endl;
-	getline(cin, address);
+	while (address.length() == 0)
+	{
+		getline(cin, address);
+	}
 
 	string contact;
 	cout << "Please input your phone_number or e_mail:" << endl;
-	getline(cin, contact);
+	while (contact.length() == 0)
+	{
+		getline(cin, contact);
+	}
 
 	double money;
 	cout << "Please set your initial account:" << endl;
@@ -374,18 +397,22 @@ void User_List::Regist()
 		user_tail->data = new_account;
 		user_tail->next = NULL;
 	}
-	Write_to_txt();
-	cout << "You have registed an account! Your user id is :" << new_account.id << endl;
+	write_to_txt();
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
+	cout << "You have registered an account! Your user id is :" << new_account.id << endl;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 	system("pause");
 }
 
-void User_List::Sign_in()
+void User_List::sign_in()
 {
 
 	inform_list* head = user_head;
 	if (head == NULL)
 	{
-		cout << "No user now!Please regist one!";
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED );
+		cout << "No user now!Please register one!";
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		Sleep(1000);
 		return;
 	}
@@ -412,7 +439,9 @@ void User_List::Sign_in()
 		}
 		if (head == NULL)
 		{
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED );
 			cout << endl << "Please input a correct user_id:";
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 			cin >> id;
 			head = user_head;
 		}
@@ -433,7 +462,9 @@ void User_List::Sign_in()
 		}
 		else
 		{
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
 			cout << endl << "Please input the right password(You have " << 5 - i << " time left):" << endl;
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 			confidential_input(password);
 			md5 = MD5_2(password);
 		}
@@ -443,12 +474,12 @@ void User_List::Sign_in()
 		cout << endl << "You have logged in!";
 		Sleep(200);
 		User user(id);
-		user.Log_in();
+		user.operate();
 	}
 	else
 	{
 		User user(id);
-		user.Freeze();
+		user.freeze();
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
 		cout << "You have been frozen!" << endl;
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
@@ -476,7 +507,7 @@ inform_list* User_List::find_one_user(string uid)
 	return head;
 }
 
-void User_List::Forget_Password()
+void User_List::forget_password()
 {
 	cout << "Pleas input your account:" << endl;
 	string uid;
@@ -491,14 +522,16 @@ void User_List::Forget_Password()
 			cin >> contact;
 			if (list->data.contact == contact)
 			{
-				char password[20];
+				char password[20] = "\0";
 				cout << "Please input your new password(number,letter and captial required, no shorter than 9 characters):" << endl;
-
-				cin.getline(password, 19);
+				while(strlen(password) ==0)
+					cin.getline(password, 19);
 
 				while (!Judge(password))
 				{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
 					cout << "Please input an appropriate password:" << endl;
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 					cin.getline(password, 19);
 				}
 
@@ -512,30 +545,86 @@ void User_List::Forget_Password()
 			}
 			else
 			{
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
 				cout << "It doesn't match your information!" << endl;
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 				system("pause");
 				return;
 			}
 		}
 		list = list->next;
 	}
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
 	cout << "No such user or your account has been frozen." << endl;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 	Sleep(300);
 }
 
 void User_List::update(string seller_id, string auctioneer_id, double money)
 {
 	inform_list* head = this->user_head;
-	while (head)
+	bool flag1 = false, flag2 = false;
+	while (head && !(flag1 && flag2))
 	{
 		if (head->data.id == seller_id)
 		{
 			head->data.money += money;
+			flag1 = true;
 		}
 		else if (head->data.id == auctioneer_id)
 		{
 			head->data.money -= money;
+			flag2 = true;
 		}
 		head = head->next;
 	}
+}
+
+contacter* User_List::my_contacter(string uid)
+{
+	inform_list* head = this->user_head;
+	contacter* res_head = NULL, * res_tail = NULL;
+	while (head)
+	{
+		if (head->data.id != uid)
+		{
+			if (res_head == NULL)
+			{
+				res_head = new contacter;
+				res_tail = res_head;
+			}
+			else
+			{
+				res_tail->next = new contacter;
+				res_tail = res_tail->next;
+			}
+			res_tail->uid = head->data.id;
+			res_tail->next = NULL;
+		}
+		head = head->next;
+	}
+	return res_head;
+}
+
+contacter* User_List::my_contacter()
+{
+	inform_list* head = this->user_head;
+	contacter* res_head = NULL, * res_tail = NULL;
+	while (head)
+	{
+		if (res_head == NULL)
+		{
+			res_head = new contacter;
+			res_tail = res_head;
+		}
+		else
+		{
+			res_tail->next = new contacter;
+			res_tail = res_tail->next;
+		}
+		res_tail->uid = head->data.id;
+		res_tail->next = NULL;
+		head = head->next;
+	}
+	return res_head;
 }
